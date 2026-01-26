@@ -1,0 +1,178 @@
+:root {
+  font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+  line-height: 1.5;
+  color: #e8eaed;
+  background: #0b0f14;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: radial-gradient(ellipse at top, #152238 0%, #0b0f14 55%);
+}
+
+.container {
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 2rem 1.25rem 3rem;
+}
+
+.hero h1,
+.header h1 {
+  color: #6cb6ff;
+  margin: 0 0 0.25rem;
+  font-size: 2rem;
+}
+
+.tagline {
+  color: #9db4cc;
+  margin: 0;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1.25rem;
+}
+
+.card {
+  background: rgba(20, 30, 48, 0.85);
+  border: 1px solid #2a3f5f;
+  border-radius: 14px;
+  padding: 1.35rem 1.5rem;
+  margin-bottom: 1rem;
+  backdrop-filter: blur(6px);
+}
+
+.card h2 {
+  margin-top: 0;
+  font-size: 1.1rem;
+  color: #c9d9ef;
+}
+
+input,
+button,
+select {
+  font: inherit;
+  padding: 0.65rem 0.85rem;
+  border-radius: 8px;
+  border: 1px solid #334d6e;
+  margin: 0.25rem 0 0.5rem;
+  width: 100%;
+  background: #0d1520;
+  color: #e8eaed;
+}
+
+button {
+  background: linear-gradient(180deg, #2d8f4e, #1f6f3d);
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+button.secondary {
+  background: #2a3544;
+  border: 1px solid #3d4f63;
+}
+
+button.small {
+  width: auto;
+  padding: 0.35rem 0.75rem;
+  font-size: 0.85rem;
+}
+
+button:hover:not(:disabled) {
+  filter: brightness(1.08);
+}
+
+label {
+  display: block;
+  margin-top: 0.6rem;
+  font-size: 0.88rem;
+  color: #8fa8c4;
+}
+
+.hint {
+  font-size: 0.82rem;
+  color: #6d849c;
+  margin: 0.25rem 0 0.5rem;
+}
+
+.error {
+  color: #ff7b72;
+  background: rgba(255, 80, 80, 0.08);
+  border: 1px solid rgba(255, 80, 80, 0.25);
+  padding: 0.65rem 0.85rem;
+  border-radius: 8px;
+}
+
+.footer-note {
+  text-align: center;
+  color: #5d7288;
+  font-size: 0.85rem;
+}
+
+.status {
+  display: inline-block;
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  background: #2a3544;
+  margin-left: 0.5rem;
+}
+
+.status.running {
+  background: #1f6f3d;
+}
+
+.status.failed {
+  background: #b62324;
+}
+
+.status.building,
+.status.pending {
+  background: #8a6116;
+}
+
+.deployment {
+  margin-bottom: 1.25rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #2a3f5f;
+}
+
+.deployment:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+}
+
+.deployment-head {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.logs {
+  background: #060a10;
+  padding: 0.75rem;
+  overflow: auto;
+  font-size: 0.78rem;
+  border-radius: 8px;
+  max-height: 220px;
+  border: 1px solid #1e2d42;
+}
+
+a {
+  color: #6cb6ff;
+}
