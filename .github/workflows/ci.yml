@@ -1,0 +1,49 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test-backend:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: stackpilot
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: stackpilot
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        working-directory: backend
+        run: |
+          pip install -r requirements.txt
+          pip install pytest httpx
+
+      - name: Run tests
+        working-directory: backend
+        env:
+          DATABASE_URL: postgresql://stackpilot:test@localhost:5432/stackpilot
+          SECRET_KEY: ci-test-secret
+        run: pytest -q
+
+      - name: Lint import
+        working-directory: backend
+        run: python -c "from app.main import app; print(app.title)"
