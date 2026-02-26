@@ -16,17 +16,20 @@ Replace with your EC2 IP:
 
 ## Deploy to production (resume link)
 
-**Follow:** [docs/DEPLOY.md](docs/DEPLOY.md) — AWS EC2 step-by-step (~1 hour).
+| Provider | Guide | Best for |
+|----------|--------|----------|
+| **Azure** (no credit card) | **[docs/DEPLOY-AZURE.md](docs/DEPLOY-AZURE.md)** | Students — **start here** |
+| **AWS EC2** | [docs/DEPLOY.md](docs/DEPLOY.md) | When you have a card / want AWS on resume |
 
-Quick version:
+Quick version (Azure):
 
 ```bash
-# On Ubuntu EC2
+# On Ubuntu Azure VM (user: azureuser)
 git clone https://github.com/YOUR_USERNAME/StackPilot.git
 cd StackPilot
-bash scripts/install-ec2.sh
+bash scripts/install-azure.sh
 # re-login, then:
-cp .env.production.example .env   # set PLATFORM_BASE_URL + passwords
+cp .env.production.example .env   # PLATFORM_BASE_URL=http://YOUR_AZURE_IP
 docker compose up -d --build
 ```
 

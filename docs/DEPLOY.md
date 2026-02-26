@@ -1,5 +1,7 @@
 # Deploy StackPilot to AWS EC2 (public resume link)
 
+> **No credit card?** Use **[DEPLOY-AZURE.md](DEPLOY-AZURE.md)** first (Azure for Students). Add AWS later for multi-cloud.
+
 This guide gets you a **working URL** like `http://54.x.x.x` (or `https://stackpilot.yourdomain.com`) for your resume.
 
 **Time:** ~45–60 minutes (first time)
