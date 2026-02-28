@@ -14,3 +14,5 @@ dist/
 workspace/
 deployments/
 scripts/README.final.md
+scripts/rebuild-git-history.ps1
+docs/GIT-HISTORY.md
