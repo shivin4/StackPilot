@@ -145,6 +145,10 @@ label {
   background: #8a6116;
 }
 
+.status.stopped {
+  background: #4a5568;
+}
+
 .deployment {
   margin-bottom: 1.25rem;
   padding-bottom: 1rem;

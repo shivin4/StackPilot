@@ -213,13 +213,13 @@ export default function App() {
             <div className="deployment-head">
               <strong>#{d.id}</strong>
               <span className={`status ${d.status}`}>{d.status}</span>
-              {d.status === "running" && (
+              {["running", "building", "pending"].includes(d.status) && (
                 <button
                   className="secondary small"
                   onClick={() => handleStop(d.id)}
                   disabled={busy}
                 >
-                  Stop
+                  {d.status === "running" ? "Stop" : "Cancel"}
                 </button>
               )}
             </div>

@@ -16,24 +16,56 @@ def _run_deploy(deployment_id: int, repo_url: str):
         deployment = db.query(Deployment).filter(Deployment.id == deployment_id).first()
         if not deployment:
             return
+        if deployer.is_cancelled(deployment_id):
+            return
         try:
             deployment.status = DeploymentStatus.building
             db.commit()
+            db.refresh(deployment)
+            if (
+                deployer.is_cancelled(deployment_id)
+                or deployment.status == DeploymentStatus.stopped
+            ):
+                return
+
             local_path = repo_url if repo_url.startswith("/") else None
             image_tag, container_id, host_port, public_url, logs = deployer.build_and_run(
                 deployment_id, repo_url, local_path, deployment.logs
             )
-            deployment.status = DeploymentStatus.running
-            deployment.image_tag = image_tag
-            deployment.container_id = container_id
-            deployment.host_port = host_port
-            deployment.public_url = public_url
-            deployment.logs = logs
+
+            db.refresh(deployment)
+            if (
+                deployer.is_cancelled(deployment_id)
+                or deployment.status == DeploymentStatus.stopped
+            ):
+                deployer.cleanup_deployment(deployment_id, container_id)
+                deployment.status = DeploymentStatus.stopped
+                deployment.logs = (logs or "") + "\nCancelled by user."
+                deployment.public_url = None
+                deployment.host_port = None
+                deployment.container_id = None
+            else:
+                deployment.status = DeploymentStatus.running
+                deployment.image_tag = image_tag
+                deployment.container_id = container_id
+                deployment.host_port = host_port
+                deployment.public_url = public_url
+                deployment.logs = logs
+        except deployer.DeploymentCancelled:
+            deployer.cleanup_deployment(deployment_id, deployment.container_id)
+            deployment.status = DeploymentStatus.stopped
+            deployment.logs = (deployment.logs or "") + "\nCancelled by user."
         except Exception as exc:
-            deployment.status = DeploymentStatus.failed
-            deployment.logs = (deployment.logs or "") + f"\nFAILED: {exc}"
+            if deployer.is_cancelled(deployment_id):
+                deployer.cleanup_deployment(deployment_id, deployment.container_id)
+                deployment.status = DeploymentStatus.stopped
+                deployment.logs = (deployment.logs or "") + "\nCancelled by user."
+            else:
+                deployment.status = DeploymentStatus.failed
+                deployment.logs = (deployment.logs or "") + f"\nFAILED: {exc}"
         db.commit()
     finally:
+        deployer.clear_cancelled(deployment_id)
         db.close()
 
 
@@ -97,8 +129,28 @@ def stop_deployment(
     project = db.query(Project).filter(Project.id == deployment.project_id).first()
     if not project or project.owner_id != user.id:
         raise HTTPException(status_code=404, detail="Not found")
-    deployer.stop_container(deployment.container_id)
-    deployment.status = DeploymentStatus.stopped
+    if deployment.status in (
+        DeploymentStatus.pending,
+        DeploymentStatus.building,
+    ):
+        deployer.mark_cancelled(deployment_id)
+        deployer.cleanup_deployment(deployment_id, deployment.container_id)
+        deployment.status = DeploymentStatus.stopped
+        deployment.logs = (deployment.logs or "") + "\nCancelled by user."
+        deployment.public_url = None
+        deployment.host_port = None
+        deployment.container_id = None
+        deployment.image_tag = None
+    elif deployment.status == DeploymentStatus.running:
+        deployer.stop_container(deployment.container_id)
+        deployment.status = DeploymentStatus.stopped
+        deployment.logs = (deployment.logs or "") + "\nStopped by user."
+    else:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Cannot stop deployment with status '{deployment.status.value}'",
+        )
+
     db.commit()
     db.refresh(deployment)
     return deployment

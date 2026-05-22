@@ -17,6 +17,29 @@ from app.config import settings
 WORKSPACE = Path("/workspace")
 PORT_CANDIDATES = (3000, 8000, 5000, 8080)
 
+_cancelled: set[int] = set()
+
+
+class DeploymentCancelled(Exception):
+    """Raised when a deployment is cancelled while building."""
+
+
+def mark_cancelled(deployment_id: int) -> None:
+    _cancelled.add(deployment_id)
+
+
+def is_cancelled(deployment_id: int) -> bool:
+    return deployment_id in _cancelled
+
+
+def clear_cancelled(deployment_id: int) -> None:
+    _cancelled.discard(deployment_id)
+
+
+def _check_cancelled(deployment_id: int) -> None:
+    if is_cancelled(deployment_id):
+        raise DeploymentCancelled("Cancelled by user")
+
 
 def _docker_client() -> docker.DockerClient:
     return docker.from_env()
@@ -118,8 +141,10 @@ def build_and_run(
     work_dir.mkdir(parents=True, exist_ok=True)
 
     try:
+        _check_cancelled(deployment_id)
         logs = _append_log(logs, f"Preparing source from {local_path or repo_url}")
         app_path = clone_or_use_path(repo_url, local_path, work_dir)
+        _check_cancelled(deployment_id)
         logs = _append_log(logs, f"Source ready at {app_path}")
 
         image_tag = f"stackpilot-app-{deployment_id}:latest"
@@ -132,9 +157,11 @@ def build_and_run(
         container_port = _detect_container_port(app_path)
         logs = _append_log(logs, f"Detected container port {container_port}")
 
+        _check_cancelled(deployment_id)
         logs = _append_log(logs, f"Building image {image_tag}...")
         client = _docker_client()
         client.images.build(path=app_path, tag=image_tag, rm=True)
+        _check_cancelled(deployment_id)
 
         host_port = random.randint(10000, 20000)
         logs = _append_log(logs, f"Starting container on host port {host_port}")
@@ -148,9 +175,38 @@ def build_and_run(
         logs = _append_log(logs, f"Live URL: {public_url}")
         return image_tag, container.id, host_port, public_url, logs
 
+    except DeploymentCancelled:
+        logs = _append_log(logs, "Build cancelled by user.")
+        raise
     except (DockerException, subprocess.CalledProcessError, OSError, RuntimeError) as exc:
+        if is_cancelled(deployment_id):
+            logs = _append_log(logs, "Build cancelled by user.")
+            raise DeploymentCancelled("Cancelled by user") from exc
         logs = _append_log(logs, f"ERROR: {exc}")
         raise
+
+
+def cleanup_deployment(deployment_id: int, container_id: str | None = None) -> None:
+    """Stop containers, remove image, and delete build workspace for a deployment."""
+    stop_container(container_id)
+    try:
+        client = _docker_client()
+        for container in client.containers.list(
+            all=True,
+            filters={"label": f"stackpilot.deployment_id={deployment_id}"},
+        ):
+            container.remove(force=True)
+    except DockerException:
+        pass
+    image_tag = f"stackpilot-app-{deployment_id}:latest"
+    try:
+        client = _docker_client()
+        client.images.remove(image_tag, force=True)
+    except DockerException:
+        pass
+    work_dir = WORKSPACE / f"deploy-{deployment_id}"
+    if work_dir.exists():
+        shutil.rmtree(work_dir, ignore_errors=True)
 
 
 def stop_container(container_id: str | None) -> None:
