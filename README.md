@@ -36,11 +36,14 @@ Connect a public GitHub repository (or a bundled sample app), click **Deploy**, 
 |------------|-------------|
 | **One-click deploy** | Git clone → `docker build` → `docker run` from the dashboard |
 | **Multi-runtime** | Node.js and Python apps (any stack that fits in Docker) |
-| **Public URLs** | Each deployment gets `https://your-platform/apps/<id>/` |
+| **Public URLs** | Each deployment gets `http://your-platform/apps/<id>/` |
 | **Reverse proxy** | Nginx + FastAPI gateway forward `/apps/{id}/` to container ports |
 | **Auth** | JWT registration/login; projects scoped per user |
 | **Live logs** | Build and runtime output in the deployment panel |
-| **Stop deployments** | Tear down containers from the UI |
+| **Cancel / stop / restart** | Cancel in-progress builds; stop running apps; restart stopped or failed deployments |
+| **Remove deployments** | Delete deployment records and clean up Docker images/containers |
+| **Student-tier safeguards** | Dashboard warnings and blocks for repos too heavy for ~1 GiB RAM VMs |
+| **Demo repo** | One-click suggestion to deploy [GoodNotes](https://github.com/shivin4/goodnotes) |
 | **Sample apps** | Built-in Node and Python hello-world for instant demos |
 | **Production-ready compose** | PostgreSQL, API, React UI, Nginx in one `docker compose` |
 | **CI/CD** | GitHub Actions for tests; optional deploy script for VM updates |
@@ -101,8 +104,10 @@ docker compose up --build
 
 1. Open http://localhost  
 2. **Register** → log in  
-3. **New project** — name: `demo`, repo: `/samples/node-hello`  
+3. **New project** — name: `demo`, repo: `/samples/node-hello` or `https://github.com/shivin4/goodnotes.git`  
 4. **Deploy** → when status is `running`, open **Live app** (e.g. http://localhost/apps/1/)
+
+Use **Cancel** on stuck `building` deployments; **Restart** / **Remove** on stopped or failed ones.
 
 Stop with `Ctrl+C` or `docker compose down`.
 
@@ -127,10 +132,13 @@ bash scripts/install-azure.sh
 # Re-login after script installs Docker, then:
 cp .env.production.example .env
 # Edit .env: PLATFORM_BASE_URL=http://YOUR_VM_PUBLIC_IP
+# Optional free hostname: http://stackpilot.duckdns.org (see DuckDNS + cron on VM)
 docker compose up -d --build
 ```
 
-**After deploy — replace `YOUR_VM_IP`:**
+**VM sizing:** Azure **B2ats_v2** (1 GiB RAM) works for the platform and **small** student apps. Avoid heavy multi-stage React builds on the same VM.
+
+**After deploy — replace `YOUR_VM_IP` or your DuckDNS name:**
 
 | URL | Purpose |
 |-----|---------|
@@ -146,6 +154,10 @@ docker compose up -d --build
 
 Anyone with access to your StackPilot instance can deploy **their** project if it meets these rules.
 
+**Recommended first test:** `https://github.com/shivin4/goodnotes.git` (lightweight notes + todos, built for 1 GiB VMs).
+
+The dashboard shows **student-tier warnings** by default. Large stacks (Next.js monorepos, databases, multi-service apps) are blocked or require confirming your repo is a **minimal single-service** project with a root `Dockerfile`.
+
 ### Checklist
 
 | # | Requirement |
@@ -156,6 +168,8 @@ Anyone with access to your StackPilot instance can deploy **their** project if i
 | 4 | **`EXPOSE`** line matching the port your app listens on |
 | 5 | Process binds **`0.0.0.0`** (not only `127.0.0.1`) |
 | 6 | Prefer ports **3000**, **8000**, **5000**, or **8080** |
+| 7 | **Small build** — avoid React/Vite/Next multi-stage Docker builds on 1 GiB RAM |
+| 8 | **API paths** — if the UI is served under `/apps/<id>/`, call `/apps/<id>/api/...` or use relative URLs |
 
 Private repos are **not** supported yet (clone uses anonymous `git clone --depth 1`).
 
@@ -226,7 +240,7 @@ Or serve the built frontend from the same Node process (see [goodnotes](https://
 
 | Repo | Stack | Port |
 |------|--------|------|
-| [goodnotes](https://github.com/shivin4/goodnotes) | Node + React notes & todos | 3000 |
+| [goodnotes](https://github.com/shivin4/goodnotes) | Node + static HTML notes & todos (StackPilot-ready) | 3000 |
 | `samples/node-hello` (in this repo) | Express JSON API | 3000 |
 | `samples/python-hello` (in this repo) | FastAPI | 8000 |
 
@@ -259,7 +273,9 @@ Base URL: `/api` (Nginx rewrites `/api/*` → FastAPI `/*`).
 | `GET` | `/deployments` | JWT | List deployments |
 | `POST` | `/deployments` | JWT | `{ "project_id" }` — starts build |
 | `GET` | `/deployments/{id}` | JWT | Status + logs |
-| `POST` | `/deployments/{id}/stop` | JWT | Stop container |
+| `POST` | `/deployments/{id}/stop` | JWT | Stop running app or **cancel** pending/building |
+| `POST` | `/deployments/{id}/restart` | JWT | Redeploy stopped or failed deployment |
+| `DELETE` | `/deployments/{id}` | JWT | Remove deployment and clean up Docker resources |
 | `*` | `/apps/{id}/…` | No* | Gateway to running app |
 
 \* Gateway is public; only **running** deployments respond. Manage deployments via JWT.
@@ -351,8 +367,8 @@ Phases: Docker & Compose → CI/CD → production VM → Kubernetes samples → 
 | Public GitHub repos only | Add deploy keys or PAT for private repos |
 | Root `Dockerfile` required | Buildpack auto-detection (future) |
 | No `PORT` env injection | Match `EXPOSE` in Dockerfile |
-| Single VM / Docker host | Kubernetes operator (see `k8s/`) |
-| SPA asset paths under subpath | `base: './'` in Vite or single-server apps |
+| Single VM / Docker host (~1 GiB RAM on student SKU) | Use lightweight apps; add swap on VM if builds OOM |
+| SPA asset paths under subpath | `base: './'` in Vite, or plain HTML + relative `/apps/<id>/api` paths |
 | No HTTPS in default compose | Terminate TLS at Nginx + Let's Encrypt |
 | GitHub OAuth fields in `.env` | Optional Phase 2+ |
 
@@ -367,6 +383,9 @@ Phases: Docker & Compose → CI/CD → production VM → Kubernetes samples → 
 | `No Dockerfile` | Add `Dockerfile` at repo root |
 | Container `failed` | Check deployment logs in UI; verify `EXPOSE` and `0.0.0.0` bind |
 | App 404 on assets | Set Vite `base: './'` or serve static files from Node |
+| App loads but API broken (`undefined` data) | Frontend must call `/apps/<id>/api/...` or use relative API base (see GoodNotes) |
+| Build stuck on `building` | Click **Cancel** in dashboard; `docker system prune -f` on VM if needed |
+| Deploy OOM on 1 GiB VM | Use [goodnotes](https://github.com/shivin4/goodnotes) or single-stage Dockerfile; add 2G swap |
 | Azure region blocked | Use East Asia / South India / East US (see [DEPLOY-AZURE.md](docs/DEPLOY-AZURE.md)) |
 | SSH key permission denied (Windows) | Use WSL or fix key permissions; see deploy guide |
 
