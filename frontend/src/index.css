@@ -180,3 +180,84 @@ label {
 a {
   color: #6cb6ff;
 }
+
+.banner {
+  border-radius: 12px;
+  padding: 1rem 1.15rem;
+  margin-bottom: 1rem;
+  border: 1px solid;
+}
+
+.banner-warn {
+  background: rgba(255, 171, 0, 0.1);
+  border-color: rgba(255, 171, 0, 0.35);
+  color: #f0d9a8;
+}
+
+.banner-warn p,
+.banner-info p {
+  margin: 0.4rem 0 0;
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+.banner-info {
+  background: rgba(108, 182, 255, 0.08);
+  border-color: rgba(108, 182, 255, 0.3);
+  margin-bottom: 1rem;
+}
+
+.warn-label {
+  color: #d4a574 !important;
+}
+
+.input-blocked {
+  border-color: #b62324 !important;
+}
+
+.inline-error {
+  margin-top: 0.35rem;
+  padding: 0.5rem 0.65rem;
+}
+
+.checkbox-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin: 0.5rem 0;
+  font-size: 0.85rem;
+  color: #b8c9de;
+}
+
+.checkbox-row input {
+  width: auto;
+  margin-top: 0.2rem;
+}
+
+.checklist {
+  margin: 0 0 0.75rem;
+  padding-left: 1.2rem;
+  color: #9db4cc;
+  font-size: 0.88rem;
+}
+
+.checklist li {
+  margin-bottom: 0.35rem;
+}
+
+.llm-prompt {
+  background: #060a10;
+  padding: 0.85rem;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  line-height: 1.4;
+  max-height: 240px;
+  overflow: auto;
+  border: 1px solid #1e2d42;
+  white-space: pre-wrap;
+  margin-top: 0.75rem;
+}
+
+.danger-text {
+  color: #ff7b72 !important;
+}

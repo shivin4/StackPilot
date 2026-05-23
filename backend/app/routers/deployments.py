@@ -102,12 +102,7 @@ def create_deployment(
     return deployment
 
 
-@router.get("/{deployment_id}", response_model=DeploymentOut)
-def get_deployment(
-    deployment_id: int,
-    db: Session = Depends(get_db),
-    user: User = Depends(get_current_user),
-):
+def _get_owned_deployment(deployment_id: int, user: User, db: Session) -> Deployment:
     deployment = db.query(Deployment).filter(Deployment.id == deployment_id).first()
     if not deployment:
         raise HTTPException(status_code=404, detail="Not found")
@@ -115,6 +110,62 @@ def get_deployment(
     if not project or project.owner_id != user.id:
         raise HTTPException(status_code=404, detail="Not found")
     return deployment
+
+
+@router.post("/{deployment_id}/restart", response_model=DeploymentOut)
+def restart_deployment(
+    deployment_id: int,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    deployment = _get_owned_deployment(deployment_id, user, db)
+    if deployment.status not in (
+        DeploymentStatus.stopped,
+        DeploymentStatus.failed,
+    ):
+        raise HTTPException(
+            status_code=400,
+            detail="Only stopped or failed deployments can be restarted",
+        )
+
+    deployer.cleanup_deployment(deployment_id, deployment.container_id)
+    deployment.status = DeploymentStatus.pending
+    deployment.image_tag = None
+    deployment.container_id = None
+    deployment.host_port = None
+    deployment.public_url = None
+    deployment.logs = (deployment.logs or "") + "\nRestart requested…"
+    db.commit()
+    db.refresh(deployment)
+
+    project = db.query(Project).filter(Project.id == deployment.project_id).first()
+    background_tasks.add_task(_run_deploy, deployment.id, project.repo_url)
+    return deployment
+
+
+@router.delete("/{deployment_id}", status_code=204)
+def delete_deployment(
+    deployment_id: int,
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    deployment = _get_owned_deployment(deployment_id, user, db)
+    if deployment.status in (DeploymentStatus.pending, DeploymentStatus.building):
+        deployer.mark_cancelled(deployment_id)
+    deployer.cleanup_deployment(deployment_id, deployment.container_id)
+    db.delete(deployment)
+    db.commit()
+    return None
+
+
+@router.get("/{deployment_id}", response_model=DeploymentOut)
+def get_deployment(
+    deployment_id: int,
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    return _get_owned_deployment(deployment_id, user, db)
 
 
 @router.post("/{deployment_id}/stop", response_model=DeploymentOut)

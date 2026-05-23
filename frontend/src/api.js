@@ -81,4 +81,8 @@ export const api = {
   getDeployment: (id) => request(`/deployments/${id}`),
   stopDeployment: (id) =>
     request(`/deployments/${id}/stop`, { method: "POST" }),
+  restartDeployment: (id) =>
+    request(`/deployments/${id}/restart`, { method: "POST" }),
+  deleteDeployment: (id) =>
+    request(`/deployments/${id}`, { method: "DELETE" }),
 };
