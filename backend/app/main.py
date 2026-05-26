@@ -4,6 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.database import Base, engine
+from app.metrics import metrics_response, prometheus_middleware
 from app.routers import auth, deployments, gateway, projects
 
 
@@ -29,9 +30,17 @@ app.add_middleware(
 )
 
 
+app.middleware("http")(prometheus_middleware)
+
+
 @app.get("/health")
 def health():
     return {"status": "ok", "service": "stackpilot-api"}
+
+
+@app.get("/metrics")
+def metrics():
+    return metrics_response()
 
 
 app.include_router(gateway.router)
