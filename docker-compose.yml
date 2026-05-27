@@ -1,4 +1,4 @@
-services:
+﻿services:
   db:
     image: postgres:16-alpine
     restart: unless-stopped
@@ -60,14 +60,22 @@ services:
 
   prometheus:
     image: prom/prometheus:v2.52.0
+    restart: unless-stopped
     ports:
       - "9090:9090"
     volumes:
       - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./monitoring/alert-rules.yml:/etc/prometheus/alert-rules.yml:ro
+    depends_on:
+      - api
+      - node-exporter
+      - cadvisor
+      - alertmanager
     profiles: ["monitoring"]
 
   grafana:
     image: grafana/grafana:11.0.0
+    restart: unless-stopped
     ports:
       - "3001:3000"
     environment:
@@ -75,9 +83,14 @@ services:
       GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-admin}
     volumes:
       - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+    depends_on:
+      - prometheus
     profiles: ["monitoring"]
+
 
 volumes:
   postgres_data:
   deploy_workspace:
   grafana_data:
+
