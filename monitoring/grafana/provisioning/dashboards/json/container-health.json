@@ -1,0 +1,49 @@
+{
+  "id": null,
+  "uid": "stackpilot-container-health",
+  "title": "StackPilot - Container Health",
+  "tags": ["stackpilot", "containers"],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "15s",
+  "time": { "from": "now-6h", "to": "now" },
+  "panels": [
+    {
+      "type": "timeseries",
+      "title": "Container CPU Usage (cores)",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum by (name) (rate(container_cpu_usage_seconds_total{name!=\"\"}[5m]))", "refId": "A" }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Container Memory Usage (bytes)",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum by (name) (container_memory_usage_bytes{name!=\"\"})", "refId": "A" }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Network Receive Rate (bytes/s)",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum by (name) (rate(container_network_receive_bytes_total{name!=\"\"}[5m]))", "refId": "A" }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Container Restarts (10m changes)",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "changes(container_start_time_seconds{name!=\"\"}[10m])", "refId": "A" }
+      ]
+    }
+  ]
+}

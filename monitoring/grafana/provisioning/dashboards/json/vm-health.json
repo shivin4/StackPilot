@@ -1,0 +1,49 @@
+{
+  "id": null,
+  "uid": "stackpilot-vm-health",
+  "title": "StackPilot - VM Health",
+  "tags": ["stackpilot", "infrastructure"],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "15s",
+  "time": { "from": "now-6h", "to": "now" },
+  "panels": [
+    {
+      "type": "timeseries",
+      "title": "CPU Utilization (%)",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "100 - (avg by (instance) (rate(node_cpu_seconds_total{mode=\"idle\"}[5m])) * 100)", "refId": "A" }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Memory Utilization (%)",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "(1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100", "refId": "A" }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Disk Utilization (%)",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "(1 - (node_filesystem_avail_bytes{fstype!~\"tmpfs|overlay\"} / node_filesystem_size_bytes{fstype!~\"tmpfs|overlay\"})) * 100", "refId": "A" }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "System Load (1m)",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "node_load1", "refId": "A" }
+      ]
+    }
+  ]
+}
