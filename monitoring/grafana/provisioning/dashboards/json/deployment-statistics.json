@@ -1,0 +1,49 @@
+{
+  "id": null,
+  "uid": "stackpilot-deployment-statistics",
+  "title": "StackPilot - Deployment Statistics",
+  "tags": ["stackpilot", "deployments"],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "15s",
+  "time": { "from": "now-6h", "to": "now" },
+  "panels": [
+    {
+      "type": "timeseries",
+      "title": "Deployments by Status",
+      "gridPos": { "h": 9, "w": 24, "x": 0, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "stackpilot_deployments_by_status", "refId": "A" }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "Total Deployments",
+      "gridPos": { "h": 6, "w": 8, "x": 0, "y": 9 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "stackpilot_deployments_total", "refId": "A" }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "Failed Deployments",
+      "gridPos": { "h": 6, "w": 8, "x": 8, "y": 9 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "stackpilot_failed_deployments_total", "refId": "A" }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Deploy API Traffic (req/s)",
+      "gridPos": { "h": 6, "w": 8, "x": 16, "y": 9 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum(rate(stackpilot_http_requests_total{path=~\"/deployments.*\"}[5m]))", "refId": "A" }
+      ]
+    }
+  ]
+}
