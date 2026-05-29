@@ -1,6 +1,6 @@
-# StackPilot
+﻿# StackPilot
 
-**A self-hosted Platform-as-a-Service (PaaS) for deploying student web apps** — think mini Heroku or Render, built for cloud & DevOps portfolios.
+**A self-hosted Platform-as-a-Service (PaaS) for deploying student web apps** â€” think mini Heroku or Render, built for cloud & DevOps portfolios.
 
 Connect a public GitHub repository (or a bundled sample app), click **Deploy**, and get a live URL with build logs in the dashboard. StackPilot clones the repo, builds a Docker image, runs the container, and routes traffic through Nginx and a FastAPI gateway.
 
@@ -34,7 +34,7 @@ Connect a public GitHub repository (or a bundled sample app), click **Deploy**, 
 
 | Capability | Description |
 |------------|-------------|
-| **One-click deploy** | Git clone → `docker build` → `docker run` from the dashboard |
+| **One-click deploy** | Git clone â†’ `docker build` â†’ `docker run` from the dashboard |
 | **Multi-runtime** | Node.js and Python apps (any stack that fits in Docker) |
 | **Public URLs** | Each deployment gets `http://your-platform/apps/<id>/` |
 | **Reverse proxy** | Nginx + FastAPI gateway forward `/apps/{id}/` to container ports |
@@ -47,36 +47,36 @@ Connect a public GitHub repository (or a bundled sample app), click **Deploy**, 
 | **Sample apps** | Built-in Node and Python hello-world for instant demos |
 | **Production-ready compose** | PostgreSQL, API, React UI, Nginx in one `docker compose` |
 | **CI/CD** | GitHub Actions for tests; optional deploy script for VM updates |
-| **Observability** | Optional Prometheus + Grafana profile |
+| **Observability** | Prometheus + Grafana + Alertmanager + Node Exporter + cAdvisor |
 
 ---
 
 ## How it works
 
 ```
-┌─────────────┐     ┌──────────────┐     ┌─────────────────┐
-│   Browser   │────▶│    Nginx     │────▶│ React Dashboard │
-└─────────────┘     │  (port 80)   │     └─────────────────┘
-                    │              │     ┌─────────────────┐
-                    └──────┬───────┴────▶│  FastAPI (API)  │
-                           │             └────────┬────────┘
-                           │                      │
-                           │              ┌───────▼────────┐
-                           │              │  PostgreSQL    │
-                           │              └────────────────┘
-                           │                      │
-                           │              ┌───────▼────────┐
-                           └─────────────▶│ Docker Engine  │
-                                          │ (student apps) │
-                                          └────────────────┘
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”     â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”     â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚   Browser   â”‚â”€â”€â”€â”€â–¶â”‚    Nginx     â”‚â”€â”€â”€â”€â–¶â”‚ React Dashboard â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜     â”‚  (port 80)   â”‚     â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+                    â”‚              â”‚     â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+                    â””â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â–¶â”‚  FastAPI (API)  â”‚
+                           â”‚             â””â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+                           â”‚                      â”‚
+                           â”‚              â”Œâ”€â”€â”€â”€â”€â”€â”€â–¼â”€â”€â”€â”€â”€â”€â”€â”€â”
+                           â”‚              â”‚  PostgreSQL    â”‚
+                           â”‚              â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+                           â”‚                      â”‚
+                           â”‚              â”Œâ”€â”€â”€â”€â”€â”€â”€â–¼â”€â”€â”€â”€â”€â”€â”€â”€â”
+                           â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â–¶â”‚ Docker Engine  â”‚
+                                          â”‚ (student apps) â”‚
+                                          â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
 ```
 
 **Deploy flow**
 
 1. User registers and creates a **Project** with a `repo_url` (GitHub HTTPS URL or local sample path).
-2. User clicks **Deploy** → API creates a deployment (`pending` → `building` → `running` or `failed`).
+2. User clicks **Deploy** â†’ API creates a deployment (`pending` â†’ `building` â†’ `running` or `failed`).
 3. Background worker clones source, requires a root **`Dockerfile`**, detects **`EXPOSE`** port, builds the image, and starts a container on a random host port.
-4. Gateway proxies `GET/POST … /apps/<deployment_id>/…` to `http://<host>:<port>/…` (path prefix stripped).
+4. Gateway proxies `GET/POST â€¦ /apps/<deployment_id>/â€¦` to `http://<host>:<port>/â€¦` (path prefix stripped).
 5. Dashboard polls every few seconds; user opens the **Live app** link.
 
 See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for CI/CD and multi-cloud notes.
@@ -96,16 +96,16 @@ docker compose up --build
 
 | URL | Purpose |
 |-----|---------|
-| http://localhost | Dashboard (Nginx → React) |
+| http://localhost | Dashboard (Nginx â†’ React) |
 | http://localhost/api/docs | OpenAPI / Swagger UI |
 | http://localhost/api/health | API health check |
 
 **First deploy (no GitHub needed)**
 
 1. Open http://localhost  
-2. **Register** → log in  
-3. **New project** — name: `demo`, repo: `/samples/node-hello` or `https://github.com/shivin4/goodnotes.git`  
-4. **Deploy** → when status is `running`, open **Live app** (e.g. http://localhost/apps/1/)
+2. **Register** â†’ log in  
+3. **New project** â€” name: `demo`, repo: `/samples/node-hello` or `https://github.com/shivin4/goodnotes.git`  
+4. **Deploy** â†’ when status is `running`, open **Live app** (e.g. http://localhost/apps/1/)
 
 Use **Cancel** on stuck `building` deployments; **Restart** / **Remove** on stopped or failed ones.
 
@@ -138,7 +138,7 @@ docker compose up -d --build
 
 **VM sizing:** Azure **B2ats_v2** (1 GiB RAM) works for the platform and **small** student apps. Avoid heavy multi-stage React builds on the same VM.
 
-**After deploy — replace `YOUR_VM_IP` or your DuckDNS name:**
+**After deploy â€” replace `YOUR_VM_IP` or your DuckDNS name:**
 
 | URL | Purpose |
 |-----|---------|
@@ -168,18 +168,18 @@ The dashboard shows **student-tier warnings** by default. Large stacks (Next.js 
 | 4 | **`EXPOSE`** line matching the port your app listens on |
 | 5 | Process binds **`0.0.0.0`** (not only `127.0.0.1`) |
 | 6 | Prefer ports **3000**, **8000**, **5000**, or **8080** |
-| 7 | **Small build** — avoid React/Vite/Next multi-stage Docker builds on 1 GiB RAM |
-| 8 | **API paths** — if the UI is served under `/apps/<id>/`, call `/apps/<id>/api/...` or use relative URLs |
+| 7 | **Small build** â€” avoid React/Vite/Next multi-stage Docker builds on 1 GiB RAM |
+| 8 | **API paths** â€” if the UI is served under `/apps/<id>/`, call `/apps/<id>/api/...` or use relative URLs |
 
 Private repos are **not** supported yet (clone uses anonymous `git clone --depth 1`).
 
 ### Dashboard steps
 
-1. **New project** — project name + GitHub URL  
+1. **New project** â€” project name + GitHub URL  
    Example: `https://github.com/shivin4/goodnotes.git`
-2. Select the project → **Deploy now**
+2. Select the project â†’ **Deploy now**
 3. Wait for status **`running`**
-4. Open **Live app** → `http://YOUR_PLATFORM_IP/apps/<deployment-id>/`
+4. Open **Live app** â†’ `http://YOUR_PLATFORM_IP/apps/<deployment-id>/`
 
 ### Dockerfile templates
 
@@ -213,7 +213,7 @@ CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
 
 StackPilot reads `EXPOSE` from the Dockerfile. If omitted, it defaults to **3000**. It may retry **3000, 8000, 5000, 8080** if the container exits on the first port.
 
-The API container does **not** inject a `PORT` environment variable today — use the same port in your app and in `EXPOSE`.
+The API container does **not** inject a `PORT` environment variable today â€” use the same port in your app and in `EXPOSE`.
 
 ### Routing under `/apps/<id>/`
 
@@ -261,22 +261,22 @@ Use these paths in **repo URL** when testing locally or on a VM without pushing 
 
 ## API reference
 
-Base URL: `/api` (Nginx rewrites `/api/*` → FastAPI `/*`).
+Base URL: `/api` (Nginx rewrites `/api/*` â†’ FastAPI `/*`).
 
 | Method | Endpoint | Auth | Description |
 |--------|----------|------|-------------|
 | `POST` | `/auth/register` | No | Create account |
-| `POST` | `/auth/login` | No | OAuth2 form → JWT |
+| `POST` | `/auth/login` | No | OAuth2 form â†’ JWT |
 | `GET` | `/health` | No | API health |
 | `GET` | `/projects` | JWT | List your projects |
 | `POST` | `/projects` | JWT | `{ "name", "repo_url" }` |
 | `GET` | `/deployments` | JWT | List deployments |
-| `POST` | `/deployments` | JWT | `{ "project_id" }` — starts build |
+| `POST` | `/deployments` | JWT | `{ "project_id" }` â€” starts build |
 | `GET` | `/deployments/{id}` | JWT | Status + logs |
 | `POST` | `/deployments/{id}/stop` | JWT | Stop running app or **cancel** pending/building |
 | `POST` | `/deployments/{id}/restart` | JWT | Redeploy stopped or failed deployment |
 | `DELETE` | `/deployments/{id}` | JWT | Remove deployment and clean up Docker resources |
-| `*` | `/apps/{id}/…` | No* | Gateway to running app |
+| `*` | `/apps/{id}/â€¦` | No* | Gateway to running app |
 
 \* Gateway is public; only **running** deployments respond. Manage deployments via JWT.
 
@@ -309,16 +309,16 @@ python -c "import secrets; print(secrets.token_urlsafe(32))"
 
 ```
 StackPilot/
-├── backend/           # FastAPI API, deployer, gateway, auth
-├── frontend/          # React dashboard (Vite)
-├── nginx/             # Reverse proxy (UI, /api, /apps)
-├── samples/           # node-hello, python-hello
-├── scripts/           # install-azure.sh, install-ec2.sh, deploy-stackpilot.sh
-├── docs/              # Deploy guides, architecture, 8-week learning plan
-├── monitoring/        # Prometheus config (optional profile)
-├── k8s/               # Sample Kubernetes manifests (learning)
-├── docker-compose.yml
-└── .github/workflows/ # CI + CD
+â”œâ”€â”€ backend/           # FastAPI API, deployer, gateway, auth
+â”œâ”€â”€ frontend/          # React dashboard (Vite)
+â”œâ”€â”€ nginx/             # Reverse proxy (UI, /api, /apps)
+â”œâ”€â”€ samples/           # node-hello, python-hello
+â”œâ”€â”€ scripts/           # install-azure.sh, install-ec2.sh, deploy-stackpilot.sh
+â”œâ”€â”€ docs/              # Deploy guides, architecture, 8-week learning plan
+â”œâ”€â”€ monitoring/        # Prometheus, Alertmanager, Grafana provisioning, alert rules
+â”œâ”€â”€ k8s/               # Sample Kubernetes manifests (learning)
+â”œâ”€â”€ docker-compose.yml
+â””â”€â”€ .github/workflows/ # CI + CD
 ```
 
 ---
@@ -356,7 +356,7 @@ Structured **8-week** cloud & DevOps curriculum with weekly docs and YouTube lin
 
 **[docs/00-START-HERE.md](docs/00-START-HERE.md)**
 
-Phases: Docker & Compose → CI/CD → production VM → Kubernetes samples → multi-cloud extras.
+Phases: Docker & Compose â†’ CI/CD â†’ production VM â†’ Kubernetes samples â†’ multi-cloud extras.
 
 ---
 
@@ -408,4 +408,5 @@ Phases: Docker & Compose → CI/CD → production VM → Kubernetes samples → 
 
 ---
 
-**StackPilot** — ship student apps from GitHub to a live URL in minutes.
+**StackPilot** â€” ship student apps from GitHub to a live URL in minutes.
+
