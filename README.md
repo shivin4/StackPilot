@@ -337,17 +337,31 @@ StackPilot/
 
 ---
 
-## Monitoring (optional)
+## Monitoring (Prometheus + Grafana + Alertmanager)
 
-```bash
-docker compose --profile monitoring up -d
+StackPilot includes an observability stack for **VM health**, **containers**, **FastAPI performance**, and **deployment reliability**.
+
+### Monitoring architecture
+
+```
+Node Exporter -> Prometheus -> Grafana Dashboards
+cAdvisor -----/
+FastAPI /metrics
+Alertmanager <- alert rules
 ```
 
-| Service | URL |
-|---------|-----|
-| Prometheus | http://localhost:9090 |
-| Grafana | http://localhost:3001 (default `admin` / `admin`) |
+### What is monitored
 
+- **Infrastructure:** CPU, memory, disk, network, load
+- **Containers:** per-container CPU/memory/network and restarts
+- **FastAPI:** request count, latency, errors, active requests
+- **Deployments:** status counts including failed deployments
+
+### Start the full stack
+
+```bash
+docker compose --profile monitoring up -d --build
+```
 ---
 
 ## Learning path
@@ -409,4 +423,5 @@ Phases: Docker & Compose â†’ CI/CD â†’ production VM â†’ Kubernet
 ---
 
 **StackPilot** â€” ship student apps from GitHub to a live URL in minutes.
+
 
