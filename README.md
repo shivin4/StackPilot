@@ -479,7 +479,13 @@ docker compose --profile monitoring up -d --force-recreate cadvisor prometheus g
 ```
 
 3. On the VM, confirm cAdvisor sees containers: `curl -s localhost:8081/metrics | grep -c container_memory_usage_bytes` (should be greater than 0).
-4. In Prometheus, verify `count(container_memory_usage_bytes{image!=""})` is greater than 0, then refresh the Grafana dashboard.
+4. In Prometheus, verify Docker cgroup metrics exist (on cgroup v2 the `image` label is often empty):
+
+```promql
+count(container_memory_usage_bytes{id=~".*docker.*"})
+```
+
+If that is greater than 0 but `count(container_memory_usage_bytes{image!=""})` is 0, pull the latest dashboard (version 5) and restart Grafana.
 
 ---
 

@@ -5,7 +5,7 @@
   "tags": ["stackpilot", "containers"],
   "timezone": "browser",
   "schemaVersion": 39,
-  "version": 4,
+  "version": 5,
   "refresh": "15s",
   "time": { "from": "now-6h", "to": "now" },
   "panels": [
@@ -16,8 +16,8 @@
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "targets": [
         {
-          "expr": "sum by (name) (rate(container_cpu_usage_seconds_total{image!=\"\", id!=\"/\"}[5m]))",
-          "legendFormat": "{{name}}",
+          "expr": "sum by (container) (label_replace(rate(container_cpu_usage_seconds_total{id=~\".*docker.*\"}[5m]), \"container\", \"$1\", \"id\", \".*/docker[-/]([a-f0-9]{12}).*\"))",
+          "legendFormat": "{{container}}",
           "refId": "A"
         }
       ]
@@ -29,8 +29,8 @@
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "targets": [
         {
-          "expr": "sum by (name) (container_memory_usage_bytes{image!=\"\", id!=\"/\"})",
-          "legendFormat": "{{name}}",
+          "expr": "sum by (container) (label_replace(container_memory_usage_bytes{id=~\".*docker.*\"}, \"container\", \"$1\", \"id\", \".*/docker[-/]([a-f0-9]{12}).*\"))",
+          "legendFormat": "{{container}}",
           "refId": "A"
         }
       ]
@@ -42,8 +42,8 @@
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "targets": [
         {
-          "expr": "sum by (name) (rate(container_network_receive_bytes_total{image!=\"\", id!=\"/\"}[5m]))",
-          "legendFormat": "{{name}}",
+          "expr": "sum by (container) (label_replace(rate(container_network_receive_bytes_total{id=~\".*docker.*\"}[5m]), \"container\", \"$1\", \"id\", \".*/docker[-/]([a-f0-9]{12}).*\"))",
+          "legendFormat": "{{container}}",
           "refId": "A"
         }
       ]
@@ -55,8 +55,8 @@
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "targets": [
         {
-          "expr": "changes(container_start_time_seconds{image!=\"\", id!=\"/\"}[10m])",
-          "legendFormat": "{{name}}",
+          "expr": "sum by (container) (label_replace(changes(container_start_time_seconds{id=~\".*docker.*\"}[10m]), \"container\", \"$1\", \"id\", \".*/docker[-/]([a-f0-9]{12}).*\"))",
+          "legendFormat": "{{container}}",
           "refId": "A"
         }
       ]
