@@ -66,7 +66,7 @@ groups:
   - name: container-alerts
     rules:
       - alert: ContainerCrashLoopDetected
-        expr: changes(container_start_time_seconds{container_label_com_docker_compose_service!=""}[10m]) > 2
+        expr: changes(container_start_time_seconds{id!="/", id!=""}[10m]) > 2
         for: 2m
         labels:
           severity: warning

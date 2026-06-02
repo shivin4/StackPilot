@@ -485,19 +485,7 @@ docker compose --profile monitoring up -d --force-recreate cadvisor prometheus g
 count(container_memory_usage_bytes{id!="/"})
 ```
 
-On cgroup v2 VMs the `image` label is often empty. The dashboard filters on Docker Compose service names (`container_label_com_docker_compose_service`). Verify:
-
-```promql
-count(container_memory_usage_bytes{container_label_com_docker_compose_service!=""})
-```
-
-If that is 0 but you see `ModemManager.service` in Grafana, cAdvisor is reporting host systemd cgroups — recreate it:
-
-```bash
-docker compose --profile monitoring up -d --force-recreate cadvisor
-```
-
-Then pull dashboard version 7 and restart Grafana.
+On cgroup v2 VMs the `image` label is often empty and cgroup `id` values may not contain the string `docker`. If `count(...{image!=""})` is 0 but `count(...{id!="/"})` is greater than 0, pull the latest dashboard (version 6) and restart Grafana.
 
 ---
 
