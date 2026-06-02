@@ -5,7 +5,7 @@
   "tags": ["stackpilot", "containers"],
   "timezone": "browser",
   "schemaVersion": 39,
-  "version": 6,
+  "version": 7,
   "refresh": "15s",
   "time": { "from": "now-6h", "to": "now" },
   "panels": [
@@ -16,8 +16,8 @@
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "targets": [
         {
-          "expr": "sum by (cgroup) (label_replace(rate(container_cpu_usage_seconds_total{id!=\"/\", id!=\"\"}[5m]), \"cgroup\", \"$1\", \"id\", \".*/([^/]+)$\"))",
-          "legendFormat": "{{cgroup}}",
+          "expr": "sum by (container_label_com_docker_compose_service) (rate(container_cpu_usage_seconds_total{container_label_com_docker_compose_service!=\"\"}[5m]))",
+          "legendFormat": "{{container_label_com_docker_compose_service}}",
           "refId": "A"
         }
       ]
@@ -29,8 +29,8 @@
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "targets": [
         {
-          "expr": "sum by (cgroup) (label_replace(container_memory_usage_bytes{id!=\"/\", id!=\"\"}, \"cgroup\", \"$1\", \"id\", \".*/([^/]+)$\"))",
-          "legendFormat": "{{cgroup}}",
+          "expr": "sum by (container_label_com_docker_compose_service) (container_memory_usage_bytes{container_label_com_docker_compose_service!=\"\"})",
+          "legendFormat": "{{container_label_com_docker_compose_service}}",
           "refId": "A"
         }
       ]
@@ -42,14 +42,9 @@
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "targets": [
         {
-          "expr": "sum by (cgroup) (label_replace(rate(container_network_receive_bytes_total{id!=\"/\", id!=\"\"}[5m]), \"cgroup\", \"$1\", \"id\", \".*/([^/]+)$\"))",
-          "legendFormat": "{{cgroup}}",
+          "expr": "sum by (container_label_com_docker_compose_service) (rate(container_network_receive_bytes_total{container_label_com_docker_compose_service!=\"\"}[5m]))",
+          "legendFormat": "{{container_label_com_docker_compose_service}}",
           "refId": "A"
-        },
-        {
-          "expr": "sum(rate(node_network_receive_bytes_total{device!=\"lo\"}[5m]))",
-          "legendFormat": "host (node-exporter)",
-          "refId": "B"
         }
       ]
     },
@@ -60,8 +55,8 @@
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "targets": [
         {
-          "expr": "sum by (cgroup) (label_replace(changes(container_start_time_seconds{id!=\"/\", id!=\"\"}[10m]), \"cgroup\", \"$1\", \"id\", \".*/([^/]+)$\"))",
-          "legendFormat": "{{cgroup}}",
+          "expr": "changes(container_start_time_seconds{container_label_com_docker_compose_service!=\"\"}[10m])",
+          "legendFormat": "{{container_label_com_docker_compose_service}}",
           "refId": "A"
         }
       ]
