@@ -1,4 +1,4 @@
-# StackPilot
+﻿# StackPilot
 
 **A self-hosted Platform-as-a-Service (PaaS) for deploying student web apps** — think mini Heroku or Render, built for cloud & DevOps portfolios.
 
@@ -467,6 +467,19 @@ Then embed them in docs, for example:
 3. Prometheus evaluates alert rules every 15s
 4. Firing alerts are sent to Alertmanager for routing/grouping
 5. Alertmanager delivers notifications to configured receivers
+
+### Container Health shows “No data”
+
+1. In Prometheus, run `count(container_memory_usage_bytes)`. If the result is **0**, cAdvisor is not exporting container metrics yet.
+2. Recreate cAdvisor after pulling the latest `docker-compose.yml` (needs `privileged`, cgroup mount, and Docker socket):
+
+```bash
+git pull
+docker compose --profile monitoring up -d --force-recreate cadvisor prometheus grafana
+```
+
+3. On the VM, confirm cAdvisor sees containers: `curl -s localhost:8081/metrics | grep -c container_memory_usage_bytes` (should be greater than 0).
+4. In Prometheus, verify `count(container_memory_usage_bytes{image!=""})` is greater than 0, then refresh the Grafana dashboard.
 
 ---
 
