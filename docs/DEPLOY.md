@@ -124,18 +124,11 @@ Push to `main` → Actions runs `deploy.yml` → updates server.
 
 ---
 
-## HTTPS with a domain (optional, +20 min)
+## HTTPS (fixes mobile browsers — required for DuckDNS production)
 
-1. Point domain A record to EC2 IP (Namecheap, Cloudflare, etc.)
-2. On EC2:
+Full steps (Let's Encrypt + Docker Nginx): **[docs/HTTPS.md](HTTPS.md)**
 
-```bash
-sudo apt install -y certbot
-sudo certbot certonly --standalone -d stackpilot.yourdomain.com
-```
-
-3. Update `.env`: `PLATFORM_BASE_URL=https://stackpilot.yourdomain.com`
-4. Add SSL nginx config (see `nginx/conf.d/ssl.example.conf` if added) or use Caddy
+Quick outline: open Azure port **443** → `certbot certonly --standalone` → enable `nginx/conf.d/ssl-stackpilot.conf` → set `PLATFORM_BASE_URL=https://your-domain`
 
 ---
 
