@@ -16,7 +16,7 @@
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "targets": [
         {
-          "expr": "sum by (cgroup) (label_replace(rate(container_cpu_usage_seconds_total{id!=\"/\", id!=\"\"}[5m]), \"cgroup\", \"$1\", \"id\", \".*/([^/]+)$\"))",
+          "expr": "sum by (cgroup) (label_replace(rate(container_cpu_usage_seconds_total{id=~\".+/.+\"}[5m]), \"cgroup\", \"$1\", \"id\", \".*/([^/]+)$\"))",
           "legendFormat": "{{cgroup}}",
           "refId": "A"
         }
@@ -29,7 +29,7 @@
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "targets": [
         {
-          "expr": "sum by (cgroup) (label_replace(container_memory_usage_bytes{id!=\"/\", id!=\"\"}, \"cgroup\", \"$1\", \"id\", \".*/([^/]+)$\"))",
+          "expr": "sum by (cgroup) (label_replace(container_memory_usage_bytes{id=~\".+/.+\"}, \"cgroup\", \"$1\", \"id\", \".*/([^/]+)$\"))",
           "legendFormat": "{{cgroup}}",
           "refId": "A"
         }
@@ -42,7 +42,7 @@
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "targets": [
         {
-          "expr": "sum by (cgroup) (label_replace(rate(container_network_receive_bytes_total{id!=\"/\", id!=\"\"}[5m]), \"cgroup\", \"$1\", \"id\", \".*/([^/]+)$\"))",
+          "expr": "sum by (cgroup) (label_replace(rate(container_network_receive_bytes_total{id=~\".+/.+\"}[5m]), \"cgroup\", \"$1\", \"id\", \".*/([^/]+)$\"))",
           "legendFormat": "{{cgroup}}",
           "refId": "A"
         },
@@ -60,7 +60,7 @@
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "targets": [
         {
-          "expr": "sum by (cgroup) (label_replace(changes(container_start_time_seconds{id!=\"/\", id!=\"\"}[10m]), \"cgroup\", \"$1\", \"id\", \".*/([^/]+)$\"))",
+          "expr": "sum by (cgroup) (label_replace(changes(container_start_time_seconds{id=~\".+/.+\"}[10m]), \"cgroup\", \"$1\", \"id\", \".*/([^/]+)$\"))",
           "legendFormat": "{{cgroup}}",
           "refId": "A"
         }
