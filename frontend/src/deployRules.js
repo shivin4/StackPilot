@@ -27,6 +27,19 @@ const HEAVY_PATTERNS = [
   /enterprise/i,
 ];
 
+const WINDOWS_PATH = /^[A-Za-z]:[/\\]/;
+
+export function isLocalPath(url) {
+  const u = (url || "").trim();
+  if (!u) return false;
+  if (u.startsWith("/samples/") || u === "/samples/node-hello" || u === "/samples/python-hello") {
+    return true;
+  }
+  if (WINDOWS_PATH.test(u)) return true;
+  if (u.startsWith("./") || u.startsWith("../")) return true;
+  return u.startsWith("/") && !u.startsWith("http");
+}
+
 export function isRecommendedRepo(url) {
   const u = (url || "").trim().toLowerCase();
   return (
@@ -39,12 +52,13 @@ export function isRecommendedRepo(url) {
 
 export function isLikelyHeavyRepo(url) {
   const u = (url || "").trim();
-  if (!u || isRecommendedRepo(u)) return false;
+  if (!u || isLocalPath(u) || isRecommendedRepo(u)) return false;
   return HEAVY_PATTERNS.some((p) => p.test(u));
 }
 
 export function requiresSmallAppConfirmation(url) {
   const u = (url || "").trim();
+  if (isLocalPath(u)) return false;
   if (!u.startsWith("http")) return false;
   return !isRecommendedRepo(u);
 }
@@ -67,6 +81,7 @@ Do NOT use: PostgreSQL, Redis, multi-stage React builds, microservices, Kubernet
 
 export const DEPLOY_CHECKLIST = [
   "Public GitHub repo with Dockerfile at the repository root",
+  "Or local folder: set HOST_PROJECTS_PATH in .env, then use C:/path/to/your-app",
   "EXPOSE 3000 or 8000 — app listens on 0.0.0.0 on the same port",
   "Single service only — no separate database container",
   "Small build: avoid React/Vite/Next.js multi-stage npm builds on 1 GiB RAM",

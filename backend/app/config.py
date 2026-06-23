@@ -10,6 +10,9 @@ class Settings(BaseSettings):
     platform_base_url: str = "http://localhost"
     deploy_host: str = "host.docker.internal"
     algorithm: str = "HS256"
+    # Host folder mapped into the API container at host_projects_mount (see docker-compose)
+    host_projects_path: str = ""
+    host_projects_mount: str = "/host-projects"
 
 
 settings = Settings()

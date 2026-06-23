@@ -25,12 +25,14 @@ services:
       ACCESS_TOKEN_EXPIRE_MINUTES: ${ACCESS_TOKEN_EXPIRE_MINUTES:-10080}
       PLATFORM_BASE_URL: ${PLATFORM_BASE_URL:-http://localhost}
       DEPLOY_HOST: ${DEPLOY_HOST:-host.docker.internal}
+      HOST_PROJECTS_PATH: ${HOST_PROJECTS_PATH:-}
     extra_hosts:
       - "host.docker.internal:host-gateway"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - deploy_workspace:/workspace
       - ./samples:/samples:ro
+      - ${HOST_PROJECTS_PATH:-./host-projects}:/host-projects:ro
     depends_on:
       db:
         condition: service_healthy

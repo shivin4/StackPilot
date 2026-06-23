@@ -1,0 +1,2 @@
+# Optional fallback mount when HOST_PROJECTS_PATH is unset.
+# Set HOST_PROJECTS_PATH in .env to your real projects folder instead.

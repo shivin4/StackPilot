@@ -1,11 +1,10 @@
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
-from sqlalchemy.orm import Session
-
 from app.auth import get_current_user
 from app.database import SessionLocal, get_db
 from app.models import Deployment, DeploymentStatus, Project, User
 from app.schemas import DeploymentCreate, DeploymentOut
 from app.services import deployer
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
+from sqlalchemy.orm import Session
 
 router = APIRouter(prefix="/deployments", tags=["deployments"])
 
@@ -28,9 +27,8 @@ def _run_deploy(deployment_id: int, repo_url: str):
             ):
                 return
 
-            local_path = repo_url if repo_url.startswith("/") else None
-            image_tag, container_id, host_port, public_url, logs = deployer.build_and_run(
-                deployment_id, repo_url, local_path, deployment.logs
+            image_tag, container_id, host_port, public_url, logs = (
+                deployer.build_and_run(deployment_id, repo_url, deployment.logs)
             )
 
             db.refresh(deployment)

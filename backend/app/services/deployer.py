@@ -13,6 +13,7 @@ import docker
 from docker.errors import DockerException
 
 from app.config import settings
+from app.services.local_paths import is_git_url, resolve_local_source_path
 
 WORKSPACE = Path("/workspace")
 PORT_CANDIDATES = (3000, 8000, 5000, 8080)
@@ -63,41 +64,42 @@ def _detect_container_port(app_path: str) -> int:
     return 3000
 
 
-def clone_or_use_path(repo_url: str, local_path: str | None, work_dir: Path) -> str:
-    """Return filesystem path to app source."""
-    if local_path and Path(local_path).exists():
+def clone_or_use_path(repo_url: str, work_dir: Path) -> str:
+    """Return filesystem path to app source (copy into workspace for docker build)."""
+    local_source = resolve_local_source_path(repo_url)
+    if local_source:
         dest = work_dir / "app"
         if dest.exists():
             shutil.rmtree(dest)
-        shutil.copytree(local_path, dest)
+        shutil.copytree(local_source, dest)
         return str(dest)
 
-    if repo_url.startswith("/") or repo_url.startswith("./"):
-        path = Path(repo_url)
-        if not path.exists():
-            raise FileNotFoundError(f"Path not found: {repo_url}")
+    if is_git_url(repo_url):
         dest = work_dir / "app"
         if dest.exists():
             shutil.rmtree(dest)
-        shutil.copytree(path, dest)
+        result = subprocess.run(
+            ["git", "clone", "--depth", "1", repo_url.strip(), str(dest)],
+            capture_output=True,
+            text=True,
+        )
+        if result.returncode != 0:
+            raise RuntimeError(result.stderr or "git clone failed")
         return str(dest)
 
-    dest = work_dir / "app"
-    if dest.exists():
-        shutil.rmtree(dest)
-    result = subprocess.run(
-        ["git", "clone", "--depth", "1", repo_url, str(dest)],
-        capture_output=True,
-        text=True,
+    raise ValueError(
+        f"Unsupported repo URL: {repo_url}. Use a public GitHub HTTPS URL, "
+        f"/samples/..., or a local path under HOST_PROJECTS_PATH."
     )
-    if result.returncode != 0:
-        raise RuntimeError(result.stderr or "git clone failed")
-    return str(dest)
 
 
-def _start_container(client, image_tag: str, deployment_id: int, container_port: int, host_port: int):
+def _start_container(
+    client, image_tag: str, deployment_id: int, container_port: int, host_port: int
+):
     """Start container; try alternate ports if the primary EXPOSE port fails."""
-    ports_to_try = [container_port] + [p for p in PORT_CANDIDATES if p != container_port]
+    ports_to_try = [container_port] + [
+        p for p in PORT_CANDIDATES if p != container_port
+    ]
     last_error = None
 
     for port in ports_to_try:
@@ -130,7 +132,6 @@ def _start_container(client, image_tag: str, deployment_id: int, container_port:
 def build_and_run(
     deployment_id: int,
     repo_url: str,
-    local_path: str | None = None,
     existing_logs: str | None = None,
 ) -> tuple[str, str, int, str, str]:
     """
@@ -142,8 +143,8 @@ def build_and_run(
 
     try:
         _check_cancelled(deployment_id)
-        logs = _append_log(logs, f"Preparing source from {local_path or repo_url}")
-        app_path = clone_or_use_path(repo_url, local_path, work_dir)
+        logs = _append_log(logs, f"Preparing source from {repo_url}")
+        app_path = clone_or_use_path(repo_url, work_dir)
         _check_cancelled(deployment_id)
         logs = _append_log(logs, f"Source ready at {app_path}")
 
@@ -178,7 +179,14 @@ def build_and_run(
     except DeploymentCancelled:
         logs = _append_log(logs, "Build cancelled by user.")
         raise
-    except (DockerException, subprocess.CalledProcessError, OSError, RuntimeError) as exc:
+    except (
+        DockerException,
+        subprocess.CalledProcessError,
+        OSError,
+        RuntimeError,
+        ValueError,
+        FileNotFoundError,
+    ) as exc:
         if is_cancelled(deployment_id):
             logs = _append_log(logs, "Build cancelled by user.")
             raise DeploymentCancelled("Cancelled by user") from exc

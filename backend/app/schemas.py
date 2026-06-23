@@ -1,8 +1,7 @@
 from datetime import datetime
 
-from pydantic import BaseModel, EmailStr, Field
-
 from app.models import DeploymentStatus
+from pydantic import BaseModel, EmailStr, Field
 
 
 class UserCreate(BaseModel):
