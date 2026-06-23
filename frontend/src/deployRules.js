@@ -1,7 +1,22 @@
-export const DEMO_REPO = "https://github.com/shivin4/goodnotes.git";
+export const EXAMPLE_REPOS = [
+  {
+    id: "goodnotes",
+    name: "goodnotes",
+    url: "https://github.com/shivin4/goodnotes.git",
+    blurb: "lightweight notes & todos",
+  },
+  {
+    id: "recipe-box",
+    name: "Recipe-Box",
+    url: "https://github.com/shivin4/Recipe-Box.git",
+    blurb: "simple recipe manager",
+  },
+];
+
+export const DEMO_REPO = EXAMPLE_REPOS[0].url;
 
 export const RECOMMENDED_HINT =
-  "Try the demo repo first: https://github.com/shivin4/goodnotes.git";
+  "Try a demo repo: goodnotes or Recipe-Box (links below).";
 
 const HEAVY_PATTERNS = [
   /next\.?js/i,
@@ -44,6 +59,7 @@ export function isRecommendedRepo(url) {
   const u = (url || "").trim().toLowerCase();
   return (
     u.includes("goodnotes") ||
+    u.includes("recipe-box") ||
     u.includes("node-hello") ||
     u.includes("python-hello") ||
     u.startsWith("/samples/")
@@ -63,6 +79,16 @@ export function requiresSmallAppConfirmation(url) {
   return !isRecommendedRepo(u);
 }
 
+export function rejectLocalRepo(url) {
+  if (isLocalPath(url)) {
+    return "Only public GitHub HTTPS URLs are supported (https://github.com/user/repo.git).";
+  }
+  if (url && url.trim() && !url.trim().startsWith("http")) {
+    return "Only public GitHub HTTPS URLs are supported (https://github.com/user/repo.git).";
+  }
+  return "";
+}
+
 export const LLM_PROJECT_PROMPT = `Build a minimal Node.js web app deployable on StackPilot (mini PaaS on a 1 GiB Azure VM).
 
 Requirements:
@@ -75,13 +101,13 @@ Requirements:
 - API routes use paths like /api/... (relative to app root, not hard-coded host)
 - Frontend fetch calls must work when app is served under a subpath like /apps/5/ (use relative URLs or detect base path from window.location)
 
-Example compatible apps: notes app, todo list, counter, hello API, markdown viewer.
+Example compatible apps: notes app, todo list, recipe box, counter, hello API.
 
 Do NOT use: PostgreSQL, Redis, multi-stage React builds, microservices, Kubernetes, or heavy ML libraries.`;
 
 export const DEPLOY_CHECKLIST = [
   "Public GitHub repo with Dockerfile at the repository root",
-  "Or local folder: set HOST_PROJECTS_PATH in .env, then use C:/path/to/your-app",
+  "HTTPS URL format: https://github.com/username/repo.git",
   "EXPOSE 3000 or 8000 — app listens on 0.0.0.0 on the same port",
   "Single service only — no separate database container",
   "Small build: avoid React/Vite/Next.js multi-stage npm builds on 1 GiB RAM",

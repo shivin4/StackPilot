@@ -3,8 +3,10 @@ import { api, clearToken, getToken, login, register } from "./api";
 import {
   DEMO_REPO,
   DEPLOY_CHECKLIST,
+  EXAMPLE_REPOS,
   LLM_PROJECT_PROMPT,
   isLikelyHeavyRepo,
+  rejectLocalRepo,
   requiresSmallAppConfirmation,
 } from "./deployRules";
 
@@ -109,6 +111,8 @@ export default function App() {
   }
 
   function validateRepo(url, requireConfirm) {
+    const localReject = rejectLocalRepo(url);
+    if (localReject) return localReject;
     if (isLikelyHeavyRepo(url)) {
       return "This repository looks like a large or complex stack. StackPilot runs on a free Azure Student VM (~1 GiB RAM). Use the demo repo or a minimal single-service project.";
     }
@@ -203,9 +207,9 @@ export default function App() {
     setAuthed(false);
   }
 
-  function useDemoRepo() {
-    setRepoUrl(DEMO_REPO);
-    if (!projectName) setProjectName("goodnotes-demo");
+  function useExampleRepo(example) {
+    setRepoUrl(example.url);
+    if (!projectName) setProjectName(`${example.id}-demo`);
     setConfirmSmallApp(false);
   }
 
@@ -335,16 +339,29 @@ export default function App() {
           </h2>
           <div className="banner banner-info">
             <strong>Recommended for testing</strong>
-            <p>
-              Use{" "}
-              <a href={DEMO_REPO} target="_blank" rel="noreferrer">
-                goodnotes
-              </a>{" "}
-              — lightweight notes &amp; todos built for this platform.
-            </p>
-            <button type="button" className="secondary small" onClick={useDemoRepo}>
-              Use demo repo
-            </button>
+            <p>Try one of these public demo repos — built for this platform:</p>
+            <ul className="example-repo-list">
+              {EXAMPLE_REPOS.map((repo) => (
+                <li key={repo.id}>
+                  <a href={repo.url} target="_blank" rel="noreferrer">
+                    {repo.name}
+                  </a>{" "}
+                  — {repo.blurb}
+                </li>
+              ))}
+            </ul>
+            <div className="btn-row">
+              {EXAMPLE_REPOS.map((repo) => (
+                <button
+                  key={repo.id}
+                  type="button"
+                  className="secondary small"
+                  onClick={() => useExampleRepo(repo)}
+                >
+                  Use {repo.name}
+                </button>
+              ))}
+            </div>
           </div>
           <form onSubmit={handleCreateProject}>
             <label htmlFor="project-name">Project name</label>
@@ -355,18 +372,17 @@ export default function App() {
               required
               placeholder="goodnotes-demo"
             />
-            <label htmlFor="repo-url">GitHub URL or sample path</label>
+            <label htmlFor="repo-url">GitHub URL</label>
             <input
               id="repo-url"
               value={repoUrl}
               onChange={(e) => setRepoUrl(e.target.value)}
               required
-              placeholder={DEMO_REPO}
+              placeholder="https://github.com/username/repo.git"
               className={repoBlocked ? "input-blocked" : ""}
             />
             <p className="hint warn-label">
-              Small single-service repos only — root Dockerfile required. Samples: /samples/node-hello ·
-              /samples/python-hello · local PC: C:/Users/you/projects/my-app (set HOST_PROJECTS_PATH in .env)
+              Public GitHub repos only — root Dockerfile required. Try goodnotes or Recipe-Box above.
             </p>
             {repoBlocked && (
               <p className="error inline-error">

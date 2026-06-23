@@ -10,10 +10,9 @@ import time
 from pathlib import Path
 
 import docker
-from docker.errors import DockerException
-
 from app.config import settings
 from app.services.local_paths import is_git_url, resolve_local_source_path
+from docker.errors import DockerException
 
 WORKSPACE = Path("/workspace")
 PORT_CANDIDATES = (3000, 8000, 5000, 8080)
